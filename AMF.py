@@ -53,7 +53,7 @@ def SGD(A, k, reg, NUM_ITER = 100, TOL = 0.001, lr = 1e-2, t0 = 100, BACKOFF_RAT
     Nu, Ni = A.shape
     
     # Remove avg
-    A.data = A.data - A.data.mean()
+    # A.data = A.data - A.data.mean()
 
     # Random initialization
     U = np.random.randn(Nu, k)
@@ -68,10 +68,12 @@ def SGD(A, k, reg, NUM_ITER = 100, TOL = 0.001, lr = 1e-2, t0 = 100, BACKOFF_RAT
         
 #        stdout.write('.')
         for n in range(support.shape[1]):
+            if (A.data[n]==0):
+                continue
             u,i = support[:,n]
             U[u,:] += -reg*lr*U[u,:]+lr*V[:,i]*(A.data[n]-np.dot(U[u,:],V[:,i]))
             V[:,i] += -reg*lr*V[:,1]+lr*U[u,:]*(A.data[n]-np.dot(U[u,:],V[:,i]))
-        
+            
         err = sp_norm(A,np.dot(U,V))
         print 'Iteration %i\tError %f\tLearning rate %f' % (t,err, lr)
         # Stoppping condition
@@ -93,4 +95,4 @@ def SGD(A, k, reg, NUM_ITER = 100, TOL = 0.001, lr = 1e-2, t0 = 100, BACKOFF_RAT
     return U,V
     
 def sp_norm(A,approx):
-    return norm(A.data-approx[A.nonzero()])/norm(A.data)
+    return norm(A.data[A.data!=0]-approx[A.nonzero()])/norm(A.data)
