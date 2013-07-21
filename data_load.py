@@ -17,8 +17,8 @@ def load_ml100k(max_ratings = None, normalize = 'user'):
     df.columns = ['user','item','rating','ts']
     if (max_ratings!=None):
         df = df.ix[:max_ratings]
-    if (normalize == 'user'):
-        gr = df.groupby('user')
+    if (normalize != None):
+        gr = df.groupby(normalize)
         df['rating'] = gr.transform(lambda(x): x - x.mean())['rating']
 
     # Now transform it into a sparse matrix
