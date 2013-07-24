@@ -1,0 +1,15 @@
+Compilation commands:
+
+1 - Compile the library. Use the -fPIC (Position Independent Code) flag, since that is required in order to build shared libraries
+gcc -Wall -fPIC -c test.c
+
+2 - Link it as a shared library
+gcc -shared -W1,-soname,libctest.so.1 -o libctest.so.1.0 *.o
+
+3 - We have named the library libctest.so.1.0, but standard linking options (i.e. -lLIB_NAME) look for libraries with extensions .so or .so.1 (depending on whether linking is at compile time or at runtime). So we create a couple of links
+
+ln -s libctest.so.1.0 libctest.so
+ln -s libctest.so.1.0 libctest.so.1
+
+4 - Now, build a executable which links against the library. Recall that the -l linking option assumes that the library name starts with "lib"
+gcc -Wall test_app.c -L. -lctest -o prog

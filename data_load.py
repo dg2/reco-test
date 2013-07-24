@@ -6,7 +6,7 @@ Created on Fri Jul 19 15:25:29 2013
 """
 import pandas as pd
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix
 from os.path import join
 from os import getcwd
 DATA_FOLDER= join(getcwd(),'ml-100k')
@@ -28,7 +28,7 @@ def load_ml100k(max_ratings = None, normalize = 'user', get_matrix = True, min_r
         
     if (get_matrix):
         # Now transform it into a sparse matrix
-        A = csr_matrix((df.rating.values,df[['user','item']].values.T))
+        A = coo_matrix((df.rating.values,df[['user','item']].values.T))
         return A        
 
     return df

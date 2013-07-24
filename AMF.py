@@ -6,6 +6,7 @@ Methods for approximate matrix factorization using incomplete data
 """
 import numpy as np
 from numpy.linalg import *
+from scipy.sparse import coo_matrix
 from sys import stdout
 
 def ALS(A, k, reg):
@@ -46,12 +47,16 @@ def ALS(A, k, reg):
 def SGD(A, k, reg, NUM_ITER = 100, TOL = 0.001, lr = 1e-2, t0 = 100, BACKOFF_RATE = 0.5, MIN_LR = 1e-3):
     '''
     Utterly basic stochastic gradient descent for low-rank factorization
-    of spare matrices
+    of sparse matrices
     '''
+
+    if (not isinstance(A, coo_matrix)):
+        A = coo_matrix(A)
 
     # Data size
     Nu, Ni = A.shape
-    
+    Nnz = A.nnz
+
     # Remove avg
     # A.data = A.data - A.data.mean()
 
@@ -59,18 +64,21 @@ def SGD(A, k, reg, NUM_ITER = 100, TOL = 0.001, lr = 1e-2, t0 = 100, BACKOFF_RAT
     U = np.random.randn(Nu, k)/reg
     V = np.random.randn(k, Ni)/reg
     
-    support = np.vstack(A.nonzero())    
     err_old = np.inf
-    
+    anneal_rate = 1
+
     for t in range(NUM_ITER):
         U_old = np.array(U)
         V_old = np.array(V)
         
 #        stdout.write('.')
-        for n in range(support.shape[1]):
-            if (A.data[n]==0):
+        for n in range(Nnz):
+            r = A.data[n]
+            u = A.row[n]
+            i = A.col[n]
+            if (r==0):
                 continue
-            u,i = support[:,n]
+
             U[u,:] += -reg*lr*U[u,:]+lr*V[:,i]*(A.data[n]-np.dot(U[u,:],V[:,i]))
             V[:,i] += -reg*lr*V[:,1]+lr*U[u,:]*(A.data[n]-np.dot(U[u,:],V[:,i]))
             
