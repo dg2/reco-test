@@ -1,3 +1,12 @@
 #!/bin/bash
-g++ -dynamiclib  -I/usr/local/include -I/usr/local/Cellar/eigen/3.1.3/include/eigen3 SMF_lib.cpp -o libsmf.so.1
-g++ -L. -lsmf SMF_demo.cpp -o SMF_demo
+if [[ `hostname -s` == *Virtual* ]]; then
+    echo "Home sweet home ..."
+    gcc  -Wall -fPIC -I/usr/include/eigen3 -c SMF_lib.cpp -o SMF_lib.o
+    g++ -shared -Wl,-soname,libsmf.so.1 -o libsmf.so.1 SMF_lib.o
+    rm libsmf.so
+    ln -s libsmf.so.1 libsmf.so
+    g++ SMF_demo.cpp -o SMF_demo -L. -lsmf
+else
+    g++ -dynamiclib  -I/usr/local/include -I/usr/local/Cellar/eigen/3.1.3/include/eigen3 SMF_lib.cpp -o libsmf.so.1
+    g++ SMF_demo.cpp -o SMF_demo -L. -lsmf
+fi
