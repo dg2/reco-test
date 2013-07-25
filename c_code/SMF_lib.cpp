@@ -5,10 +5,13 @@
 
 #include <fstream>
 #include <vector>
-#include <strtk.hpp>
+//#include <strtk.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace Eigen;
+using namespace boost;
 
 void load_sparse_matrix(string csv_filename, int* user, int* item, double* rating) {
 	ifstream in(csv_filename.c_str());
@@ -17,15 +20,21 @@ void load_sparse_matrix(string csv_filename, int* user, int* item, double* ratin
 		vector<int> u;
 		vector<int> v;
 		vector<double> r;
+		char_separator<char> sep(";");
 
-		while(in.good()) 
+		while(1) 
 		{
 			getline(in, line);
+			if (!in.good()) {
+				break;
+			}
 			// Parse line
-
-
+			tokenizer< char_separator<char> > tokens(line, sep);	
+			tokenizer< char_separator<char> >::iterator it = tokens.begin();
+			cout << (string) *(it++) << '\t' << (string) *(it++) << '\t' << (string) *(it++) << endl;
 		}
-	in.close();
+
+		in.close();
 	}
 	else cout << "Can't open file " + csv_filename;
 	return;
