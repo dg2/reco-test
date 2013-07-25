@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <vector>
+#include <string>
 //#include <strtk.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -29,14 +30,10 @@ void load_sparse_matrix(string csv_filename, int* user, int* item, double* ratin
 				break;
 			}
 			// Parse line
-<<<<<<< Updated upstream
 			tokenizer< char_separator<char> > tokens(line, sep);	
 			tokenizer< char_separator<char> >::iterator it = tokens.begin();
-			cout << (string) *(it++) << '\t' << (string) *(it++) << '\t' << (string) *(it++) << endl;
-=======
-			
-
->>>>>>> Stashed changes
+			r.push_back((double) atoi( ((string)*(it++)).c_str()) );
+//			cout << (string) *(it++) << '\t' << (string) *(it++) << '\t' << (string) *(it++) << endl;
 		}
 
 		in.close();
