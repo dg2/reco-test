@@ -3,16 +3,23 @@
 
 int main(int argc, char** argv)
 {
-	int* user;
-	int* item;
-	double* rating;
-	int N = 3;
-	int K = 5;
+	std::vector<int> user;
+	std::vector<int> item;
+	std::vector<double> rating;
+	int K = 50;
 	int MAX_ITER = 100;
-	double lr = 0.01;
-	double *user_factor = new double[3];
-	double *item_factor = new double[3];
-	load_sparse_matrix("data_file.csv", user, item, rating);	
+	double lr = 0.02;
+	double lambda = 0.1;
+	double t0 = 500;
+	SMF::RatingMatrix M;
+	M.loadFromFile("data_file.csv");	
 	std::cout << "Data loaded\n";
-	SMF_sgd(user, item, rating, 3, 3, N, K, MAX_ITER, 1.0, lr, 500.0, user_factor, item_factor);
+	std::cout << "Number of users: " << M.numUsers() << std::endl;
+	std::cout << "Number of items: " << M.numItems() << std::endl;
+	std::cout << "Number of ratings: " << M.numRatings() << std::endl;
+	Eigen::MatrixXd user_factor = Eigen::MatrixXd::Random(M.numUsers(), K);
+	Eigen::MatrixXd item_factor = Eigen::MatrixXd::Random(M.numItems(), K);
+	
+//	std::cout << user[0] << '\t' << item[0] << '\t' << rating[0] << std::endl;
+	SMF_sgd(M, K, MAX_ITER, lambda, lr, t0, user_factor, item_factor);
 }

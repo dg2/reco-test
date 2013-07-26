@@ -1,28 +1,32 @@
 #include "SMF_lib.h"
 #include <iostream>
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
 //#include <Eigen/Sparse>
 
 #include <fstream>
-#include <vector>
-#include <string>
+//#include <vector>
+//#include <string>
 //#include <strtk.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+
 
 using namespace std;
 using namespace Eigen;
 using namespace boost;
 
-void load_sparse_matrix(string csv_filename, int* user, int* item, double* rating) {
+namespace SMF {
+
+void RatingMatrix::loadFromFile(string csv_filename) {
 	ifstream in(csv_filename.c_str());
 	string line;
 	if (in.is_open()) {
-		vector<int> u;
-		vector<int> v;
-		vector<double> r;
+		int u;
+		int v;
+		double r;
 		char_separator<char> sep(";");
-
+		tokenizer< char_separator<char> >::iterator it;
+		this->clear();
 		while(1) 
 		{
 			getline(in, line);
@@ -31,26 +35,26 @@ void load_sparse_matrix(string csv_filename, int* user, int* item, double* ratin
 			}
 			// Parse line
 			tokenizer< char_separator<char> > tokens(line, sep);	
-			tokenizer< char_separator<char> >::iterator it = tokens.begin();
-			r.push_back((double) atoi( ((string)*(it++)).c_str()) );
-//			cout << (string) *(it++) << '\t' << (string) *(it++) << '\t' << (string) *(it++) << endl;
+			it = tokens.begin();
+			u = atoi( (*(it++)).c_str());
+			v = atoi( (*(it++)).c_str());
+			r = atoi( (*(it)).c_str());
+			this->insert(u,v,r);
 		}
 
 		in.close();
 	}
 	else cout << "Can't open file " + csv_filename;
 	return;
-}
+};
 
-void SMF_sgd(int* user, int* item, double* rating, int N_users, int N_items, int N_ratings, int K, int MAX_ITER, double lambda, double lr, double t0, double* user_factor, double* item_factor)
+void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor)
 {
 	double THRESH = 1e-3;
 	double BACKOFF_RATE = 0.75;
 
 	// Initialization
 	int iter = 0;
-	MatrixXd u_f = MatrixXd::Random(N_users,K);
-	MatrixXd v_f = MatrixXd::Random(N_ratings,K);
 	MatrixXd u_old;
 	MatrixXd v_old;
 	double err_old = 1e10;
@@ -65,22 +69,28 @@ void SMF_sgd(int* user, int* item, double* rating, int N_users, int N_items, int
 		cout << "Iteration " << iter << '\t';
 		cum_err = 0;
 		// Store old previous values of the factors
-		u_old = MatrixXd(u_f);
-		v_old = MatrixXd(v_f);
+		u_old = MatrixXd(user_factor);
+		v_old = MatrixXd(item_factor);
 
 		// Once pass of stochastic gradient descent over the whole dataset
-		for (int n = 0; n < N_ratings; n++)
+		vector<triplet>::const_iterator it = M.data.begin();
+
+		for (; it < M.data.end(); it++)
 		{
-			double r = rating[n];
-			int u = user[n];
-			int v = item[n];
-			err = r - u_f.row(u).dot(v_f.row(v));
+			SMF::triplet tr = *it;
+			double r = tr.value;
+			long u = tr.i;
+			long v = tr.j;
+//			cout << u << '\t' << v << '\t' << r << endl;
+			err = r - user_factor.row(u-1).dot(item_factor.row(v-1));
 			cum_err += err;
-			u_f.row(u) += -lambda*lr*u_f.row(u)+lr*v_f.row(v)*err;
-			v_f.row(v) += -lambda*lr*v_f.row(v)+lr*u_f.row(u)*err;
+			user_factor.row(u-1) += -lambda*lr*user_factor.row(u-1)+lr*item_factor.row(v-1)*err;
+			item_factor.row(v-1) += -lambda*lr*item_factor.row(v-1)+lr*user_factor.row(u-1)*err;
 		}
-		cum_err/=N_ratings;
-		cout << "Average error: " << cum_err << '\n';
+
+		cum_err/=M.numRatings();
+		cout << "Average error: " << cum_err << '\t' << "Learning rate: " << lr << endl;
+
 
 		// Check conditions for ending the loop
 
@@ -107,3 +117,5 @@ void SMF_sgd(int* user, int* item, double* rating, int N_users, int N_items, int
 		lr = lr*anneal_rate;
 	}
 }
+
+} //end namespace SMF
