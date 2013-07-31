@@ -28,7 +28,7 @@ def load_ml100k(max_ratings = None, normalize = 'user', get_matrix = True, min_r
         
     if (get_matrix):
         # Now transform it into a sparse matrix
-        A = coo_matrix((df.rating.values,df[['user','item']].values.T))
+        A = coo_matrix((df.rating.values,df[['user','item']].values.T-1))
         return A        
 
     return df

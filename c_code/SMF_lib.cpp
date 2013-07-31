@@ -10,6 +10,11 @@
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 
+// Dario Garcia, 2013
+
+// TODO
+// - Implement non-negative matrix factorization, since ratings are always going to be non-negative
+// - It makes sense to use the unconstrained version (SMF_sgd) if we remove the mean of the ratings
 
 using namespace std;
 using namespace Eigen;
@@ -48,7 +53,7 @@ void RatingMatrix::loadFromFile(string csv_filename) {
 	return;
 };
 
-void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor)
+  void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor, bool removeMean = false)
 {
 	double THRESH = 1e-3;
 	double BACKOFF_RATE = 0.75;
@@ -72,7 +77,7 @@ void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double l
 		u_old = MatrixXd(user_factor);
 		v_old = MatrixXd(item_factor);
 
-		// Once pass of stochastic gradient descent over the whole dataset
+		// One pass of stochastic gradient descent over the whole dataset
 		vector<triplet>::const_iterator it = M.data.begin();
 
 		for (; it < M.data.end(); it++)
@@ -82,8 +87,10 @@ void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double l
 			long u = tr.i;
 			long v = tr.j;
 //			cout << u << '\t' << v << '\t' << r << endl;
+			if (removeMean)
+			  r-=M.mean();
 			err = r - user_factor.row(u-1).dot(item_factor.row(v-1));
-			cum_err += err;
+			cum_err += abs(err);
 			user_factor.row(u-1) += -lambda*lr*user_factor.row(u-1)+lr*item_factor.row(v-1)*err;
 			item_factor.row(v-1) += -lambda*lr*item_factor.row(v-1)+lr*user_factor.row(u-1)*err;
 		}
@@ -92,7 +99,7 @@ void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double l
 		cout << "Average error: " << cum_err << '\t' << "Learning rate: " << lr << endl;
 
 
-		// Check conditions for ending the loop
+		// Check conditions for ending the loop or backing off 
 
 		if (cum_err > err_old) {
 			cout << "Backing off\t" << cum_err << '\t' << err_old << '\n';
@@ -107,7 +114,7 @@ void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double l
 		}
 		if (fabs(cum_err-err_old)<THRESH) {
 			cout << "Convergence\n";
-			cout << fabs(cum_err-err_old);
+			//cout << fabs(cum_err-err_old);
 			return;
 		}
 

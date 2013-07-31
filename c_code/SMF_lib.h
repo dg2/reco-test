@@ -30,6 +30,7 @@ private:
 	long _nnz;
 	set<long> users;
 	set<long> items;
+	double _sum;
 
 // METHODS
 public:
@@ -40,12 +41,14 @@ public:
 		_nnz = 0;
 	}
 
+	// Overloaded operators
+	
 	// Getters
 	long numUsers() const { return _nRows; }
 	long numItems() const { return _nCols; }
 	long numRatings() const { return _nnz; }
 
-	//
+	// Insert a new element at position (i,j) with value k
 	void insert(long i, long j, long k) {
 		data.push_back(triplet(i,j,k));
 		_nnz++;
@@ -57,17 +60,26 @@ public:
 			items.insert(j);
 			_nCols++;
 		}
+		_sum+=k;
 	}
 
+	// Clear the matrix data
 	void clear() {
 		data.clear();
 		_nnz = 0;
 		_nRows = 0;
 		_nCols = 0;
+		_sum = 0;
 	}
+	
+	// Load matrix data from a CSV file
 	void loadFromFile(string csv_filename);
+
+	// Get average value
+	double mean() const { return _sum/_nnz; };
+
 };
 
-void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor);
+ void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor, bool removeMean);
 //void load_sparse_matrix(std::string csv_filename, std::vector<int> &user, std::vector<int> &item, std::vector<double> &rating);
 }
