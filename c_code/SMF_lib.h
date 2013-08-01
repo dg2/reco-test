@@ -54,11 +54,11 @@ public:
 		_nnz++;
 		if (! users.count(i) ) {
 			users.insert(i);
-			_nRows++;
+			_nRows = max(_nRows, i);
 		}
 		if (! items.count(j) ) {
 			items.insert(j);
-			_nCols++;
+			_nCols = max(_nCols, j);
 		}
 		_sum+=k;
 	}

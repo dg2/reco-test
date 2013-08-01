@@ -16,10 +16,11 @@ int main(int argc, char* argv[])
 	double lambda = 0.1;
 	double t0 = 500;
 	bool removeMean = false;
+	string INPUT_FILE = "data_file.csv";
 
 	SMF::RatingMatrix M;
 
-	M.loadFromFile("data_file.csv");	
+	M.loadFromFile(INPUT_FILE);	
 	std::cout << "Data loaded\n";
 	std::cout << "Number of users: " << M.numUsers() << std::endl;
 	std::cout << "Number of items: " << M.numItems() << std::endl;

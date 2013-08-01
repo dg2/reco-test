@@ -86,11 +86,17 @@ void RatingMatrix::loadFromFile(string csv_filename) {
 			double r = tr.value;
 			long u = tr.i;
 			long v = tr.j;
-//			cout << u << '\t' << v << '\t' << r << endl;
+			//
 			if (removeMean)
 			  r-=M.mean();
 			err = r - user_factor.row(u-1).dot(item_factor.row(v-1));
+			//	cout << err << endl;
 			cum_err += abs(err);
+			if (isnan(cum_err)) {
+			  cout << "Something's wrong, breaking the loop ...\n";
+			  cout << u << '\t' << v << '\t' << r << endl;
+			  break;
+			}
 			user_factor.row(u-1) += -lambda*lr*user_factor.row(u-1)+lr*item_factor.row(v-1)*err;
 			item_factor.row(v-1) += -lambda*lr*item_factor.row(v-1)+lr*user_factor.row(u-1)*err;
 		}
@@ -98,10 +104,8 @@ void RatingMatrix::loadFromFile(string csv_filename) {
 		cum_err/=M.numRatings();
 		cout << "Average error: " << cum_err << '\t' << "Learning rate: " << lr << endl;
 
-
 		// Check conditions for ending the loop or backing off 
-
-		if (cum_err > err_old) {
+		if ((cum_err > err_old) || isnan(cum_err)) {
 			cout << "Backing off\t" << cum_err << '\t' << err_old << '\n';
 			lr = lr/anneal_rate;
 			lr = lr*anneal_rate*BACKOFF_RATE;

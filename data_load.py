@@ -14,7 +14,7 @@ DATA_FILE = 'u.data'
 
 def load_ml100k(max_ratings = None, normalize = 'user', get_matrix = True, min_ratings = 3):
     # Read tab separated data into a dataframe
-    df = pd.read_csv(join(DATA_FOLDER, DATA_FILE), sep = '\t', header = False)
+    df = pd.read_csv(join(DATA_FOLDER, DATA_FILE), sep = '\t', header = None)
     df.columns = ['user','item','rating','ts']
     if (max_ratings!=None):
         df = df.ix[:max_ratings]
