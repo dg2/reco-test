@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Learn model
+awk -F"\t" '{printf "%d | u %d | i %d\n", $3,$1,$2}' < ml-100k/ua.base | vw /dev/stdin -b 18 -q ui --rank 10 --l2 0.001 --learning_rate 0.025 --passes 20 --decay_learning_rate 0.97 --power_t 0 -f movielens.reg --cache_file movielens.cache -p vw_out
+# Test model
+awk -F"\t" '{printf "%d | u %d | i %d\n", $3,$1,$2}' < ml-100k/ua.test | vw /dev/stdin -i movielens.reg -t -p vw_test_out

@@ -1,0 +1,5 @@
+#!/bin/bash
+# Building in OS X
+g++ -dynamiclib  -I/usr/local/include/eigen3 SMF_lib.cpp -o libsmf.so
+g++ -I/usr/local/include/eigen3 SMF_demo.cpp -o smf_demo -L. -lsmf
+
