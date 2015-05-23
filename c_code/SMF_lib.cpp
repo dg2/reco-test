@@ -53,7 +53,9 @@ void RatingMatrix::loadFromFile(string csv_filename) {
 	return;
 };
 
-  void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor, bool removeMean = false)
+void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, 
+          double lr, double t0, Eigen::MatrixXd &user_factor, 
+          Eigen::MatrixXd &item_factor, bool removeMean = false)
 {
 	double THRESH = 1e-3;
 	double BACKOFF_RATE = 0.75;
@@ -88,7 +90,7 @@ void RatingMatrix::loadFromFile(string csv_filename) {
 			long v = tr.j;
 			//
 			if (removeMean)
-			  r-=M.mean();
+			  r -= M.mean();
 			err = r - user_factor.row(u-1).dot(item_factor.row(v-1));
 			//	cout << err << endl;
 			cum_err += abs(err);

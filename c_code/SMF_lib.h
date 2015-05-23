@@ -19,6 +19,9 @@ struct triplet {
 	}
 };
 
+/** 
+ * The RatingMatrix class is basically a very simple sparse matrix
+ */
 class RatingMatrix {
 // MEMBERS
 public:
@@ -49,6 +52,8 @@ public:
 	long numRatings() const { return _nnz; }
 
 	// Insert a new element at position (i,j) with value k
+    // NOTE: Doesn't check if there already exists another
+    // element with those indices
 	void insert(long i, long j, long k) {
 		data.push_back(triplet(i,j,k));
 		_nnz++;
@@ -76,10 +81,14 @@ public:
 	void loadFromFile(string csv_filename);
 
 	// Get average value
+    // TODO: Cache the value, invalidate / recalculate
+    // when the matrix is updated
 	double mean() const { return _sum/_nnz; };
 
 };
 
- void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, double lr, double t0, Eigen::MatrixXd &user_factor, Eigen::MatrixXd &item_factor, bool removeMean);
+void SMF_sgd(const RatingMatrix &M, int K, int MAX_ITER, double lambda, 
+        double lr, double t0, Eigen::MatrixXd &user_factor, 
+        Eigen::MatrixXd &item_factor, bool removeMean);
 //void load_sparse_matrix(std::string csv_filename, std::vector<int> &user, std::vector<int> &item, std::vector<double> &rating);
 }
